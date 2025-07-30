@@ -1,3 +1,3 @@
-#!/usr/bin/python3
+#!/usr/bin/evn python3
 def add(a: float, b: float) -> float:
 	return a + b
