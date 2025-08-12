@@ -1,26 +1,23 @@
-#!/user/bin/env python3
+#!/usr/bin/env python3
+"""
+Module for calculating index ranges for pagination.
+"""
 
-    from typing import Tuple
+from typing import Tuple
 
 
-def index_range(page: int, page_size: int) -> tuple:
+def index_range(page: int, page_size: int) -> Tuple[int, int]:
     """
-    Returns a tuple of size two containg a start index and an end index.
+    Calculate the start and end indexes for a given pagination page.
 
     Args:
-        page (int): The page number
-        page_size (int): The number of items per page
+        page (int): The current page number (1-indexed).
+        page_size (int): The number of items per page.
 
     Returns:
-        tuple: A tuple containing a start index and an edn index
+        Tuple[int, int]: A tuple containing the start index (inclusive)
+        and the end index (exclusive) for slicing a list.
     """
-
-    if not isinstance(page, int) or not isinstance(page_size, int):
-        raise TypeError("Both page and page_size must be integers")
-    if page < 1 or page_size < 1:
-        raise ValueError("Both page and page_size must be positive")
-
-    start = (page - 1) * page_size
-    end = page * page_size
-
-    return (start, end)
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+    return (start_index, end_index)
