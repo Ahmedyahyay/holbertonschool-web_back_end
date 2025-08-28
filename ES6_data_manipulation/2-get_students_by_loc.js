@@ -1,6 +1,8 @@
-function getStudentsByLocation(list, city){
-
-  return list.filter((student) => student.location === city);
+function getStudentsByLocation(list, city) {
+  return Array.isArray(list)
+    ? list.filter((student) => student.location === city)
+    : [];
 }
-default export getListStudents;
+
+export default getStudentsByLocation;
 
