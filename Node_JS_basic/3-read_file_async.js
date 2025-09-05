@@ -7,33 +7,44 @@ function countStudents(path) {
         reject(Error('Cannot load the database'));
         return;
       }
-      const lines = data.split('\n').filter(line => line.trim() !== '');
-      if (lines.length <= 1) {
-        console.log('Number of students: 0');
-        resolve();
-        return;
-      }
-      const students = lines.slice(1).map(line => line.split(','))
-        .filter(fields => fields.length === lines[0].split(',').length);
-      const total = students.length;
-      console.log(`Number of students: ${total}`);
-      const fieldMap = {};
-      students.forEach(fields => {
-        const field = fields[fields.length - 1];
-        const firstname = fields[0];
-        if (!fieldMap[field]) {
-          fieldMap[field] = [];
+      const response = [];
+      let msg;
+
+      const content = data.toString().split('\n');
+
+      let students = content.filter((item) => item);
+
+      students = students.map((item) => item.split(','));
+
+      const NUMBER_OF_STUDENTS = students.length ? students.length - 1 : 0;
+      msg = `Number of students: ${NUMBER_OF_STUDENTS}`;
+      console.log(msg);
+
+      response.push(msg);
+
+      const fields = {};
+      for (const i in students) {
+        if (i !== 0) {
+          if (!fields[students[i][3]]) fields[students[i][3]] = [];
+
+          fields[students[i][3]].push(students[i][0]);
         }
-        fieldMap[field].push(firstname);
-      });
-      Object.keys(fieldMap).sort().forEach(field => {
-        const names = fieldMap[field];
-        console.log(`Number of students in ${field}: ${names.length}. List: ${names.join(', ')}`);
-      });
-      resolve();
+      }
+
+      delete fields.field;
+
+      for (const key of Object.keys(fields)) {
+        msg = `Number of students in ${key}: ${
+          fields[key].length
+        }. List: ${fields[key].join(', ')}`;
+
+        console.log(msg);
+
+        response.push(msg);
+      }
+      resolve(response);
     });
   });
 }
 
 module.exports = countStudents;
-
