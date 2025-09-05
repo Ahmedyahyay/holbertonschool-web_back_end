@@ -1,53 +1,38 @@
 const fs = require('fs');
 
-module.exports = function countStudents(path) {
-  return new Promise(((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, params) => {
+function countStudents(path) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, data) => {
       if (err) {
-        reject(Error('Cannot load the database'));
+        reject(new Error('Cannot load the database'));
         return;
       }
-
-      let s = params;
-      s = s.split('\n');
-      const headers = s.shift().split(',');
-
-      const groups = {};
-      const studentsObjects = [];
-
-      s.forEach((student) => {
-        if (student) {
-          const info = student.split(',');
-          const studentObject = {};
-
-          headers.forEach((header, index) => {
-            studentObject[header] = info[index];
-            if (header === 'field') {
-              if (groups[info[index]]) {
-                groups[info[index]].push(studentObject.firstname);
-              } else {
-                groups[info[index]] = [studentObject.firstname];
-              }
-            }
-          });
-          studentsObjects.push(studentObject);
-        }
-      });
-      const number = `Number of students: ${studentsObjects.length}`;
-
-      let response = `${number}\n`;
-      console.log(number);
-
-      for (const i in groups) {
-        if (groups[i]) {
-          const list = groups[i];
-          const j = `Number of students in ${i}: ${list.length}. List: ${list.join(', ')}`;
-          response += `${j}\n`;
-          console.log(j);
-        }
+      const lines = data.split('\n').filter(line => line.trim() !== '');
+      if (lines.length === 0) {
+        console.log('Number of students: 0');
+        resolve();
+        return;
       }
-      resolve(response);
+      const students = lines.slice(1).map(line => line.split(','))
+        .filter(fields => fields.length === lines[0].split(',').length);
+      const total = students.length;
+      console.log(`Number of students: ${total}`);
+      const fieldMap = {};
+      students.forEach(fields => {
+        const field = fields[fields.length - 1];
+        const firstname = fields[0];
+        if (!fieldMap[field]) {
+          fieldMap[field] = [];
+        }
+        fieldMap[field].push(firstname);
+      });
+      for (const [field, names] of Object.entries(fieldMap)) {
+        console.log(`Number of students in ${field}: ${names.length}. List: ${names.join(', ')}`);
+      }
+      resolve();
     });
-  }));
-};
+  });
+}
+
+module.exports = countStudents;
 
