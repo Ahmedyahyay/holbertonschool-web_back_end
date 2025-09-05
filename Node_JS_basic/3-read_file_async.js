@@ -4,11 +4,11 @@ function countStudents(path) {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, data) => {
       if (err) {
-        reject(new Error('Cannot load the database'));
+        reject(Error('Cannot load the database'));
         return;
       }
       const lines = data.split('\n').filter(line => line.trim() !== '');
-      if (lines.length === 0) {
+      if (lines.length <= 1) {
         console.log('Number of students: 0');
         resolve();
         return;
@@ -26,9 +26,10 @@ function countStudents(path) {
         }
         fieldMap[field].push(firstname);
       });
-      for (const [field, names] of Object.entries(fieldMap)) {
+      Object.keys(fieldMap).sort().forEach(field => {
+        const names = fieldMap[field];
         console.log(`Number of students in ${field}: ${names.length}. List: ${names.join(', ')}`);
-      }
+      });
       resolve();
     });
   });
