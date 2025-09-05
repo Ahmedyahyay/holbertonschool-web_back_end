@@ -1,34 +1,39 @@
-const fs = require('fs');
+// full_server/utils.js
+import { promises as fs } from 'fs';
 
-function readDatabase(path) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, data) => {
-      if (err) {
-        reject(Error(err));
-        return;
-      }
-      const content = data.toString().split('\n');
+export default async function readDatabase(filePath) {
+  try {
+    const data = await fs.readFile(filePath, 'utf8');
 
-      let students = content.filter((item) => item);
+    const lines = data
+      .split('\n')
+      .filter((line) => line.trim() !== '');
 
-      students = students.map((item) => item.split(','));
+    // Handle empty or header-only CSV: return empty mapping
+    if (lines.length <= 1) {
+      return {};
+    }
 
-      const fields = {};
-      for (const i in students) {
-        if (i !== 0) {
-          if (!fields[students[i][3]]) fields[students[i][3]] = [];
+    // Remove header
+    lines.shift();
 
-          fields[students[i][3]].push(students[i][0]);
-        }
-      }
+    // Build mapping: { field: [firstnames...] }
+    const fields = {};
+    for (const line of lines) {
+      const parts = line.split(',');
+      if (parts.length < 4) continue;
 
-      delete fields.field;
+      const firstname = parts[0].trim();
+      const field = parts[3].trim();
+      if (!firstname || !field) continue;
 
-      resolve(fields);
+      if (!fields[field]) fields[field] = [];
+      fields[field].push(firstname);
+    }
 
-      //   return fields;
-    });
-  });
+    return fields;
+  } catch (err) {
+    // Propagate read error (controller will map to proper status)
+    throw err;
+  }
 }
-
-export default readDatabase;
