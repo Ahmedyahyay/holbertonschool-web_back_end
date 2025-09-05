@@ -1,33 +1,44 @@
 const fs = require('fs');
 
-function countStudents(path) {
+module.exports = function countStudents(path) {
+  let s = [];
+
   try {
-    const data = fs.readFileSync(path, 'utf8');
-    const lines = data.split('\n').filter(line => line.trim() !== '');
-    if (lines.length === 0) {
-      console.log('Number of students: 0');
-      return;
-    }
-    const students = lines.slice(1).map(line => line.split(','))
-      .filter(fields => fields.length === lines[0].split(',').length);
-    const total = students.length;
-    console.log(`Number of students: ${total}`);
-    const fieldMap = {};
-    students.forEach(fields => {
-      const field = fields[fields.length - 1];
-      const firstname = fields[0];
-      if (!fieldMap[field]) {
-        fieldMap[field] = [];
-      }
-      fieldMap[field].push(firstname);
-    });
-    for (const [field, names] of Object.entries(fieldMap)) {
-      console.log(`Number of students in ${field}: ${names.length}. List: ${names.join(', ')}`);
-    }
+    s = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
   } catch (err) {
-    throw new Error('Cannot load the database');
+    throw Error('Cannot load the database');
   }
-}
+  s = s.split('\n');
+  const headers = s.shift().split(',');
 
-module.exports = countStudents;
+  const groups = {};
+  const studentsObjects = [];
 
+  s.forEach((student) => {
+    if (student) {
+      const info = student.split(',');
+      const studentObject = {};
+
+      headers.forEach((header, index) => {
+        studentObject[header] = info[index];
+        if (header === 'field') {
+          if (groups[info[index]]) {
+            groups[info[index]].push(studentObject.firstname);
+          } else {
+            groups[info[index]] = [studentObject.firstname];
+          }
+        }
+      });
+      studentsObjects.push(studentObject);
+    }
+  });
+
+  console.log(`Number of students: ${studentsObjects.length}`);
+
+  for (const info in groups) {
+    if (groups[info]) {
+      const listStudents = groups[info];
+      console.log(`Number of students in ${info}: ${listStudents.length}. List: ${listStudents.join(', ')}`);
+    }
+  }
+};
